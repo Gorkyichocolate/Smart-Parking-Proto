@@ -1,4 +1,4 @@
-module example.com/mod~
+module github.com/Gorkyichocolate/Smart-Parking-Proto
 
 go 1.25.9
 
