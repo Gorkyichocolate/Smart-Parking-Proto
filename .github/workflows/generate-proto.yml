@@ -3,7 +3,7 @@ name: Generate Proto
 on:
   push:
   workflow_dispatch:
-    
+
   pull_request:
     paths:
       - '**.proto'
@@ -19,6 +19,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.22'
+
+      - name: Debug versions
+        run: |
+          protoc --version
+          which protoc
+          protoc-gen-go --version || true
 
       # ✅ СТАВИМ НОВЫЙ protoc
       - name: Install protoc
