@@ -1,0 +1,49 @@
+name: Generate Proto
+
+on:
+  push:
+    paths:
+      - '**.proto'
+  pull_request:
+    paths:
+      - '**.proto'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Install protoc
+        run: |
+          sudo apt update
+          sudo apt install -y protobuf-compiler
+
+      - name: Install plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Generate proto
+        run: |
+          protoc \
+            --go_out=. \
+            --go-grpc_out=. \
+            proto/notification/*.proto
+
+      - name: Check for changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Proto files are not up to date. Run protoc locally."
+            exit 1
+          fi
