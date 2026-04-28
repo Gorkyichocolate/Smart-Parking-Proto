@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package notification;
 
-option go_package = "proto/notification;notificationpb";
+option go_package = "github.com/GorkiyChocolate/Smart-Parking-Proto/proto/notification;notificationpb";
 
 service NotificationService {
   rpc SendEmail (SendEmailRequest) returns (SendEmailResponse);

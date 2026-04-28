@@ -333,7 +333,7 @@ const file_proto_notification_notification_proto_rawDesc = "" +
 	"\baccepted\x18\x01 \x01(\x05R\baccepted2\xbd\x01\n" +
 	"\x13NotificationService\x12L\n" +
 	"\tSendEmail\x12\x1e.notification.SendEmailRequest\x1a\x1f.notification.SendEmailResponse\x12X\n" +
-	"\rSendBulkEmail\x12\".notification.SendBulkEmailRequest\x1a#.notification.SendBulkEmailResponseB#Z!proto/notification;notificationpbb\x06proto3"
+	"\rSendBulkEmail\x12\".notification.SendBulkEmailRequest\x1a#.notification.SendBulkEmailResponseBRZPgithub.com/GorkiyChocolate/Smart-Parking-Proto/proto/notification;notificationpbb\x06proto3"
 
 var (
 	file_proto_notification_notification_proto_rawDescOnce sync.Once
