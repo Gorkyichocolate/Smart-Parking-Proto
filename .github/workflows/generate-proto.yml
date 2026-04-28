@@ -25,9 +25,10 @@ jobs:
 
       - name: Install protoc
         run: |
-          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v27.1/protoc-27.1-linux-x86_64.zip
-          unzip -o protoc-27.1-linux-x86_64.zip -d $HOME/.local
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+            cd /tmp
+            curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v27.1/protoc-27.1-linux-x86_64.zip
+            unzip -o protoc-27.1-linux-x86_64.zip -d $HOME/.local
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install Go plugins
         run: |
