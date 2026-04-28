@@ -9,6 +9,7 @@ service NotificationService {
   rpc SendBulkEmail (SendBulkEmailRequest) returns (SendBulkEmailResponse);
 }
 
+
 message SendEmailRequest {
   string request_id = 1;
   string to = 2;

@@ -2,8 +2,8 @@ name: Generate Proto
 
 on:
   push:
-    paths:
-      - '**.proto'
+  workflow_dispatch:
+    
   pull_request:
     paths:
       - '**.proto'
@@ -49,4 +49,3 @@ jobs:
             exit 1
           fi
 
-          
