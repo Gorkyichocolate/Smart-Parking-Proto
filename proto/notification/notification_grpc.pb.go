@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.21.12
-// source: notification.proto
+// source: proto/notification/notification.proto
 
 package notificationpb
 
@@ -155,5 +155,5 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "notification.proto",
+	Metadata: "proto/notification/notification.proto",
 }
