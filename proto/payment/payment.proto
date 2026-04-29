@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "smart-parking/proto;pb";
+
+import "google/protobuf/timestamp.proto";
+
+service PaymentService {
+  rpc CreatePayment (CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc GetPayment (GetPaymentRequest) returns (GetPaymentResponse);
+}
+
+message CreatePaymentRequest {
+  string booking_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string payment_method = 4; // card, cash, qr
+}
+
+message CreatePaymentResponse {
+  string id = 1;
+  string status = 2;
+}
+
+message GetPaymentRequest {
+  string id = 1;
+}
+
+message GetPaymentResponse {
+  Payment payment = 1;
+}
+
+message Payment {
+  string id = 1;
+  string booking_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string status = 5;
+  string payment_method = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
