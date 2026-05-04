@@ -1,6 +1,6 @@
 module github.com/Gorkyichocolate/Smart-Parking-Proto
 
-go 1.22
+go 1.24.5
 
 require (
 	google.golang.org/grpc v1.80.0
