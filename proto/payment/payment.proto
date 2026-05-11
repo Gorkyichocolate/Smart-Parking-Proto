@@ -1,21 +1,48 @@
+// proto/payment/payment.proto
 syntax = "proto3";
 
 package payment;
 
-option go_package = "github.com/Gorkyichocolate/Smart-Parking-Proto/proto/payment;pb";
+option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/payment;paymentpb";
 
 import "google/protobuf/timestamp.proto";
+import "common/common.proto";
 
 service PaymentService {
-  rpc CreatePayment (CreatePaymentRequest) returns (CreatePaymentResponse);
-  rpc GetPayment (GetPaymentRequest) returns (GetPaymentResponse);
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc GetPaymentByBooking(GetPaymentByBookingRequest) returns (GetPaymentResponse);
+  rpc GetUserPayments(GetUserPaymentsRequest) returns (GetPaymentsResponse);
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+  rpc GetUserInvoices(GetUserInvoicesRequest) returns (GetInvoicesResponse);
+}
+
+message Payment {
+  string id = 1;
+  string booking_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string status = 5; // pending, completed, failed
+  string payment_method = 6; // card, cash, qr
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message Invoice {
+  string id = 1;
+  string payment_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string pdf_url = 5;
+  google.protobuf.Timestamp issued_at = 6;
 }
 
 message CreatePaymentRequest {
   string booking_id = 1;
   string user_id = 2;
   double amount = 3;
-  string payment_method = 4; // card, cash, qr
+  string payment_method = 4;
+  string user_email = 5; // для отправки уведомления
 }
 
 message CreatePaymentResponse {
@@ -31,13 +58,34 @@ message GetPaymentResponse {
   Payment payment = 1;
 }
 
-message Payment {
+message GetPaymentByBookingRequest {
+  string booking_id = 1;
+}
+
+message GetUserPaymentsRequest {
+  string user_id = 1;
+  common.PaginationRequest pagination = 2;
+}
+
+message GetPaymentsResponse {
+  repeated Payment payments = 1;
+  common.PaginationResponse pagination = 2;
+}
+
+message GetInvoiceRequest {
   string id = 1;
-  string booking_id = 2;
-  string user_id = 3;
-  double amount = 4;
-  string status = 5;
-  string payment_method = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+}
+
+message GetInvoiceResponse {
+  Invoice invoice = 1;
+}
+
+message GetUserInvoicesRequest {
+  string user_id = 1;
+  common.PaginationRequest pagination = 2;
+}
+
+message GetInvoicesResponse {
+  repeated Invoice invoices = 1;
+  common.PaginationResponse pagination = 2;
 }

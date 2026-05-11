@@ -1,0 +1,16 @@
+# Generated files
+gen/ except gen/go/go.mod
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.log

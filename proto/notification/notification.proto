@@ -1,14 +1,19 @@
+// proto/notification/notification.proto
 syntax = "proto3";
 
 package notification;
 
-option go_package = "github.com/GorkiyChocolate/Smart-Parking-Proto/proto/notification;notificationpb";
+option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/notification;notificationpb";
+
+import "google/protobuf/timestamp.proto";
+import "common/common.proto";
 
 service NotificationService {
-  rpc SendEmail (SendEmailRequest) returns (SendEmailResponse);
-  rpc SendBulkEmail (SendBulkEmailRequest) returns (SendBulkEmailResponse);
+  rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);
+  rpc SendBulkEmail(SendBulkEmailRequest) returns (SendBulkEmailResponse);
+  rpc GetEmailStatus(GetEmailStatusRequest) returns (GetEmailStatusResponse);
+  rpc GetUserEmails(GetUserEmailsRequest) returns (GetEmailsResponse);
 }
-
 
 message SendEmailRequest {
   string request_id = 1;
@@ -16,24 +21,60 @@ message SendEmailRequest {
   string subject = 3;
   string body = 4;
   bool is_html = 5;
+  map<string, string> metadata = 6;
 }
 
 message SendEmailResponse {
-  string message_id = 1;
-}
-
-message Email {
-  string to = 1;
-  string subject = 2;
-  string body = 3;
-  bool is_html = 4;
+  string email_id = 1;
+  string message_id = 2;
+  string status = 3;
 }
 
 message SendBulkEmailRequest {
   string request_id = 1;
-  repeated Email emails = 2;
+  repeated EmailMessage emails = 2;
 }
 
 message SendBulkEmailResponse {
-  int32 accepted = 1;
+  int32 total = 1;
+  int32 accepted = 2;
+  int32 failed = 3;
+  repeated string email_ids = 4;
+}
+
+message EmailMessage {
+  string to = 1;
+  string subject = 2;
+  string body = 3;
+  bool is_html = 4;
+  map<string, string> metadata = 5;
+}
+
+message GetEmailStatusRequest {
+  string email_id = 1;
+}
+
+message GetEmailStatusResponse {
+  string email_id = 1;
+  string status = 2;
+  string error = 3;
+  google.protobuf.Timestamp sent_at = 4;
+}
+
+message GetUserEmailsRequest {
+  string user_id = 1;
+  common.PaginationRequest pagination = 2;
+}
+
+message GetEmailsResponse {
+  repeated EmailRecord emails = 1;
+  common.PaginationResponse pagination = 2;
+}
+
+message EmailRecord {
+  string id = 1;
+  string to = 2;
+  string subject = 3;
+  string status = 4;
+  google.protobuf.Timestamp created_at = 5;
 }

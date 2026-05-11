@@ -1,0 +1,41 @@
+// proto/common/common.proto
+syntax = "proto3";
+
+package common;
+
+option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/common;commonpb";
+
+import "google/protobuf/timestamp.proto";
+
+message PaginationRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message PaginationResponse {
+  int32 total = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  int32 total_pages = 4;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}
+
+message Empty {}
+
+message StatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string full_name = 3;
+  string role = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
