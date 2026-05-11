@@ -3,88 +3,57 @@ name: Generate Go gRPC Code
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - 'proto/**'
-  pull_request:
     branches: [ main ]
     paths:
       - 'proto/**'
+  workflow_dispatch:
 
 jobs:
-  generate-go:
+  generate:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'  # Используем стабильную версию, не 1.25
+          go-version: '1.21'
 
-      - name: Install protoc
+      - name: Install tools
         run: |
-          sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-          protoc --version
-
-      - name: Install protoc-gen-go and protoc-gen-go-grpc
-        run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Clean old generated files
+      - name: Generate
         run: |
-          rm -rf gen/go
-          mkdir -p gen/go
-
-      - name: Generate Go code
-        run: |
+          # Очищаем старые файлы
+          rm -rf gen
+          
+          # Генерируем новые
           protoc --proto_path=proto \
-            --go_out=gen/go --go_opt=paths=source_relative \
-            --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
-            proto/common/*.proto \
-            proto/auth/*.proto \
-            proto/parking/*.proto \
-            proto/payment/*.proto \
-            proto/notification/*.proto
+            --go_out=gen --go_opt=paths=source_relative \
+            --go-grpc_out=gen --go-grpc_opt=paths=source_relative \
+            proto/**/*.proto
 
-      - name: Create/Update go.mod
+      - name: Setup module
         run: |
-          cd gen/go
-          # Проверяем существует ли go.mod
-          if [ -f "go.mod" ]; then
-            echo "go.mod already exists, updating..."
-            go mod edit -module github.com/GorkiyChocolate/smart-parking-proto/gen/go
-          else
-            echo "Creating new go.mod..."
-            go mod init github.com/GorkiyChocolate/smart-parking-proto/gen/go
-          fi
-          go get google.golang.org/grpc
-          go get google.golang.org/protobuf
+          cd gen
+          cat > go.mod << EOF
+          module github.com/GorkiyChocolate/smart-parking-proto/gen
+          go 1.21
+          require (
+              google.golang.org/grpc v1.62.0
+              google.golang.org/protobuf v1.33.0
+          )
+          EOF
           go mod tidy
 
-      - name: Check for changes
-        id: git-check
+      - name: Commit
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add gen/go/
-          if git diff --cached --quiet; then
-            echo "changes=false" >> $GITHUB_OUTPUT
-            echo "No changes to commit"
-          else
-            echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected"
-          fi
-
-      - name: Commit and push changes
-        if: steps.git-check.outputs.changes == 'true'
-        run: |
-          git commit -m "chore: auto-generate Go gRPC code [skip ci]"
-          git push origin HEAD:${{ github.ref_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git add gen/
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-generate proto [skip ci]"
+          git push
