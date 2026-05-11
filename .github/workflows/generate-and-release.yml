@@ -1,0 +1,117 @@
+# .github/workflows/generate-and-release.yml
+name: Generate Proto and Create Release
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'proto/**'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          protoc --version
+
+      - name: Install protoc plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Generate Go code
+        run: |
+          # Clean and create directory
+          rm -rf gen
+          mkdir -p gen/go
+          
+          # Generate all proto files
+          protoc --proto_path=proto \
+            --go_out=gen/go --go_opt=paths=source_relative \
+            --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
+            proto/common/*.proto \
+            proto/auth/*.proto \
+            proto/parking/*.proto \
+            proto/payment/*.proto \
+            proto/notification/*.proto
+          
+          echo "✅ Code generated"
+
+      - name: Create go.mod WITHOUT external dependencies
+        run: |
+          cd gen/go
+          
+          # Create go.mod without trying to resolve the local package
+          cat > go.mod << 'EOF'
+          module github.com/GorkiyChocolate/smart-parking-proto/gen/go
+          
+          go 1.21
+          
+          require (
+              google.golang.org/grpc v1.62.0
+              google.golang.org/protobuf v1.33.0
+          )
+          EOF
+          
+          # Replace the local path to avoid network lookup
+          echo "replace github.com/GorkiyChocolate/smart-parking-proto/gen/go => ./" >> go.mod
+          
+          # Now run go mod tidy
+          go mod tidy
+          
+          echo "✅ go.mod created"
+
+      - name: Get version
+        id: version
+        run: |
+          # Get latest tag or create v0.0.0
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Increment patch version
+          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+          else
+            NEW_VERSION="v0.0.1"
+          fi
+          
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "TAG=${NEW_VERSION}" >> $GITHUB_ENV
+          echo "✅ Version: ${NEW_VERSION}"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag ${{ env.TAG }}
+          git push origin ${{ env.TAG }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Release ${{ env.TAG }}
+          body: |
+            ## Auto-generated Go SDK for Smart Parking Proto
+            
+            ### Installation:
+            ```bash
+            go get github.com/GorkiyChocolate/smart-parking-proto/gen/go@${{ env.TAG }}
