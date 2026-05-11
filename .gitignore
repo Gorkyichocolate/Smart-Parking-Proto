@@ -1,9 +1,7 @@
-# Generated files
-gen/ except gen/go/go.mod
-
+# .gitignore
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 
@@ -11,6 +9,14 @@ gen/ except gen/go/go.mod
 .DS_Store
 Thumbs.db
 
-# Temp files
+# Generated files (но не удаляем gen/ из репозитория)
+# gen/ - комментируем, так как хотим хранить сгенерированный код
+
+# Temporary files
 *.tmp
 *.log
+*.test
+*.out
+
+# Go
+/vendor/

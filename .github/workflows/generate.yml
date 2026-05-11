@@ -1,5 +1,4 @@
-# .github/workflows/generate.yml
-name: Generate Proto Buffers
+name: Generate Go Proto
 
 on:
   push:
@@ -11,7 +10,7 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,34 +21,43 @@ jobs:
         with:
           go-version: '1.21'
 
-      - name: Install Protocol Buffers tools
+      - name: Install protoc
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
-          export PATH="$PATH:$(go env GOPATH)/bin"
+          protoc --version
+
+      - name: Install protoc plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
       - name: Generate Go code
         run: |
-          # Clean and create directory
+          # Clean old generated files
           rm -rf gen/go
           mkdir -p gen/go
           
           # Generate all proto files
-          for proto_file in $(find proto -name "*.proto"); do
-            echo "Processing: $proto_file"
-            protoc \
-              --proto_path=proto \
-              --go_out=gen/go --go_opt=paths=source_relative \
-              --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
-              $proto_file
-          done
+          protoc --proto_path=proto \
+            --go_out=gen/go --go_opt=paths=source_relative \
+            --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
+            proto/common/*.proto \
+            proto/auth/*.proto \
+            proto/parking/*.proto \
+            proto/payment/*.proto \
+            proto/notification/*.proto
           
-          # Create go.mod
+          echo "✅ Go code generated to gen/go/"
+
+      - name: Update go.mod
+        run: |
           cd gen/go
-          cat > go.mod << EOF
-          module github.com/${{ github.repository }}/gen/go
+          
+          # Create go.mod if not exists
+          if [ ! -f "go.mod" ]; then
+            cat > go.mod << 'EOF'
+          module github.com/GorkiyChocolate/smart-parking-proto/gen/go
           
           go 1.21
           
@@ -58,28 +66,23 @@ jobs:
               google.golang.org/protobuf v1.33.0
           )
           EOF
+          fi
           
           go mod tidy
+          echo "✅ go.mod updated"
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          echo "✅ Generation complete"
-
-      - name: Check for changes
-        id: changes
-        run: |
-          git add gen/
-          if git diff --cached --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No changes to commit"
+          git add gen/go/
+          git add proto/  # только если удалили .pb.go файлы
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: regenerate protobuf code [skip ci]"
+            git push
+            echo "✅ Changes pushed"
           else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "✅ Changes detected"
+            echo "ℹ️ No changes to commit"
           fi
-
-      - name: Commit changes
-        if: steps.changes.outputs.has_changes == 'true'
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "🤖 Auto-generate protobuf code [skip ci]"
-          git push
-          echo "✅ Changes pushed to repository"
