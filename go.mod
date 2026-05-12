@@ -1,5 +1,5 @@
 // go.mod (в корне репозитория)
-module github.com/GorkiyChocolate/smart-parking-proto
+module github.com/GorkyiChocolate/smart-parking-proto
 
 go 1.21
 
