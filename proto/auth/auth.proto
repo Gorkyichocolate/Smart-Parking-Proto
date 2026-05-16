@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/auth;authpb";
+option go_package = "github.com/Gorkyichocolate/smart-parking-proto/gen/go/auth;authpb";
 
 import "google/protobuf/timestamp.proto";
 import "common/common.proto";

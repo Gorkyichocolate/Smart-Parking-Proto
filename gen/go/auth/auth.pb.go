@@ -9,7 +9,7 @@
 package authpb
 
 import (
-	common "github.com/GorkiyChocolate/smart-parking-proto/gen/go/common"
+	common "github.com/Gorkyichocolate/smart-parking-proto/gen/go/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"

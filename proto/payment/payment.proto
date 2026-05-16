@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package payment;
 
-option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/payment;paymentpb";
+option go_package = "github.com/Gorkyichocolate/smart-parking-proto/gen/go/payment;paymentpb";
 
 import "google/protobuf/timestamp.proto";
 import "common/common.proto";

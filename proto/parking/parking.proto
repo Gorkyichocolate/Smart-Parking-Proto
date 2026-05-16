@@ -1,35 +1,20 @@
-// proto/parking/parking.proto
 syntax = "proto3";
 
 package parking;
 
-option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/parking;parkingpb";
+option go_package = "github.com/Gorkyichocolate/smart-parking-proto/gen/go/parking";
 
 import "google/protobuf/timestamp.proto";
-import "common/common.proto";
 
 service ParkingService {
-  // Zones
-  rpc CreateZone(CreateZoneRequest) returns (CreateZoneResponse);
+  rpc GetZones(GetZonesRequest) returns (GetZonesResponse);
   rpc GetZone(GetZoneRequest) returns (GetZoneResponse);
-  rpc GetZones(common.Empty) returns (GetZonesResponse);
-  rpc UpdateZone(UpdateZoneRequest) returns (UpdateZoneResponse);
-  rpc DeleteZone(DeleteZoneRequest) returns (common.StatusResponse);
-
-  // Spots
-  rpc CreateSpot(CreateSpotRequest) returns (CreateSpotResponse);
-  rpc GetSpot(GetSpotRequest) returns (GetSpotResponse);
-  rpc GetSpotsByZone(GetSpotsByZoneRequest) returns (GetSpotsResponse);
-  rpc GetAvailableSpots(GetAvailableSpotsRequest) returns (GetSpotsResponse);
-  rpc UpdateSpotStatus(UpdateSpotStatusRequest) returns (UpdateSpotStatusResponse);
-  rpc DeleteSpot(DeleteSpotRequest) returns (common.StatusResponse);
-
-  // Bookings
+  rpc GetSpots(GetSpotsRequest) returns (GetSpotsResponse);
+  rpc GetFreeSpots(GetFreeSpotsRequest) returns (GetFreeSpotsResponse);
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
-  rpc GetUserBookings(GetUserBookingsRequest) returns (GetBookingsResponse);
-  rpc CancelBooking(CancelBookingRequest) returns (common.StatusResponse);
-  rpc UpdateBookingStatus(UpdateBookingStatusRequest) returns (UpdateBookingStatusResponse);
+  rpc GetUserBookings(GetUserBookingsRequest) returns (GetUserBookingsResponse);
+  rpc CancelBooking(CancelBookingRequest) returns (CancelBookingResponse);
 }
 
 message ParkingZone {
@@ -37,14 +22,16 @@ message ParkingZone {
   string name = 2;
   string address = 3;
   int32 total_spots = 4;
+  google.protobuf.Timestamp created_at = 5;
 }
 
 message ParkingSpot {
   string id = 1;
   string zone_id = 2;
   string spot_number = 3;
-  string status = 4; // free, occupied, reserved
+  string status = 4;
   double price_per_hour = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
 
 message Booking {
@@ -54,126 +41,72 @@ message Booking {
   google.protobuf.Timestamp start_time = 4;
   google.protobuf.Timestamp end_time = 5;
   double total_price = 6;
-  string status = 7; // pending, active, completed, cancelled
+  string status = 7;
   google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
-message CreateZoneRequest {
-  string name = 1;
-  string address = 2;
-  int32 total_spots = 3;
-}
-
-message CreateZoneResponse {
-  string id = 1;
-}
-
-message GetZoneRequest {
-  string id = 1;
-}
-
-message GetZoneResponse {
-  ParkingZone zone = 1;
-}
-
+// GetZones
+message GetZonesRequest {}
 message GetZonesResponse {
   repeated ParkingZone zones = 1;
 }
 
-message UpdateZoneRequest {
+// GetZone
+message GetZoneRequest {
   string id = 1;
-  string name = 2;
-  string address = 3;
 }
-
-message UpdateZoneResponse {
+message GetZoneResponse {
   ParkingZone zone = 1;
 }
 
-message DeleteZoneRequest {
-  string id = 1;
-}
-
-message CreateSpotRequest {
-  string zone_id = 1;
-  string spot_number = 2;
-  double price_per_hour = 3;
-}
-
-message CreateSpotResponse {
-  string id = 1;
-}
-
-message GetSpotRequest {
-  string id = 1;
-}
-
-message GetSpotResponse {
-  ParkingSpot spot = 1;
-}
-
-message GetSpotsByZoneRequest {
+// GetSpots
+message GetSpotsRequest {
   string zone_id = 1;
 }
-
 message GetSpotsResponse {
   repeated ParkingSpot spots = 1;
 }
 
-message GetAvailableSpotsRequest {
+// GetFreeSpots
+message GetFreeSpotsRequest {
   string zone_id = 1;
 }
-
-message UpdateSpotStatusRequest {
-  string id = 1;
-  string status = 2;
+message GetFreeSpotsResponse {
+  repeated ParkingSpot spots = 1;
 }
 
-message UpdateSpotStatusResponse {
-  ParkingSpot spot = 1;
-}
-
-message DeleteSpotRequest {
-  string id = 1;
-}
-
+// CreateBooking
 message CreateBookingRequest {
   string user_id = 1;
   string spot_id = 2;
   google.protobuf.Timestamp start_time = 3;
   google.protobuf.Timestamp end_time = 4;
 }
-
 message CreateBookingResponse {
-  string id = 1;
-  double total_price = 2;
+  Booking booking = 1;
 }
 
+// GetBooking
 message GetBookingRequest {
   string id = 1;
 }
-
 message GetBookingResponse {
   Booking booking = 1;
 }
 
+// GetUserBookings
 message GetUserBookingsRequest {
   string user_id = 1;
 }
-
-message GetBookingsResponse {
+message GetUserBookingsResponse {
   repeated Booking bookings = 1;
 }
 
+// CancelBooking
 message CancelBookingRequest {
   string id = 1;
 }
-
-message UpdateBookingStatusRequest {
-  string id = 1;
-  string status = 2;
-}
-
-message UpdateBookingStatusResponse {
-  Booking booking = 1;
+message CancelBookingResponse {
+  bool success = 1;
 }

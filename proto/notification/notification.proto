@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package notification;
 
-option go_package = "github.com/GorkiyChocolate/smart-parking-proto/gen/go/notification;notificationpb";
+option go_package = "github.com/Gorkyichocolate/smart-parking-proto/gen/go/notification;notificationpb";
 
 import "google/protobuf/timestamp.proto";
 import "common/common.proto";
